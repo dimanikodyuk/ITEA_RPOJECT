@@ -29,11 +29,11 @@ class Employees(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     dt_add = db.Column(db.DateTime, nullable=False)
     full_name = db.Column(db.String(150), nullable=False)
-    position_id = db.Column(db.Integer, db.ForeignKey('dictionary.id', ondelete='SET NULL'), nullable=False)
+    position = db.Column(db.Integer, db.ForeignKey('dictionary.id', ondelete='SET NULL'), nullable=False)
     department_id = db.Column(db.Integer, db.ForeignKey('departments.id', ondelete='SET NULL'), nullable=False)
     login = db.Column(db.String(100), nullable=False)
     password = db.Column(db.String(100), nullable=False)
-    dt_upd = db.Column(db.DateTime, nullable=False)
+    dt_update = db.Column(db.DateTime, nullable=False)
 
 class Log(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
