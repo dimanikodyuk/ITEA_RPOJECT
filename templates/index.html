@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Главная</title>
+
+    {% block title %}
+    {{ title }}
+    {% endblock %}
+</head>
+
+<style>
+    #menu {
+        padding: 0;
+        margin: 0;
+        margin-left: 30%;
+        font-family:  Verdana;
+        font-weight: bold;
+        }
+#menu li {
+        list-style: none;
+        float: left;
+        height: 30px;
+        padding: 0;
+        margin: 0;
+        width: 200px;
+        text-align: center;
+        background:  orange;
+        position: relative;
+        padding-top: 12px;
+        }
+#menu li ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        width: 200px;
+        display: none;
+        position: absolute;
+        left: 0;
+        top: 42px;
+        }
+#menu li ul li {
+        float: none;
+        height: 30px;
+        margin: 0;
+        width: 200px;
+        text-align: center;
+        background: #FF8C00;
+        }
+#menu li a {
+        display: block;
+        width: 200px;
+        height: 30px;
+        color:    black;
+        text-decoration: none;
+        }
+
+  #menu li:hover ul{
+          display: block;
+          }
+  #menu li:hover{
+          background: #FF8C00;
+          }
+
+
+
+
+</style>
+
+
+
+<body bgcolor="#FFE4B5">
+
+{% if user_role == 2 %}
+<header>
+    <ul id="menu" style="border: 1px;">
+        <li><a href="/">Домашняя</a></li>
+        <li>
+                <a href="#">Просмотр</a>
+                <ul>
+                        <li><a href="/get_all_emp">Сотрудники</a></li>
+                        <li><a href="/get_all_dep">Департаменты</a></li>
+                        <li><a href="/get_all_app">Заявки</a></li>
+                </ul>
+        </li>
+        <li><a href="/autorization">Авторизация</a></li>
+</ul>
+<br><br><br><br><br><br>
+</header>
+{% elif user_role == 3 %}
+<header>
+    <ul id="menu" style="border: 1px;">
+        <li><a href="/">Домашняя</a></li>
+        <li>
+                <a href="#">Просмотр</a>
+                <ul>
+                        <li><a href="/get_all_emp">Сотрудники</a></li>
+                        <li><a href="/get_all_dep">Департаменты</a></li>
+                        <li><a href="/get_all_app">Заявки</a></li>
+                </ul>
+        </li>
+        <li><a href="/autorization">Авторизация</a></li>
+</ul>
+<br><br><br><br><br><br>
+</header>
+{% else %}
+<header>
+    <ul id="menu" style="border: 1px;">
+        <li><a href="/">Домашняя</a></li>
+        <li><a href="/autorization">Авторизация</a></li>
+</ul>
+<br><br><br><br><br><br>
+</header>
+{% endif %}
+
+
+
+<h1>Поддержка компании FinX</h1>
+<p><b>ТОВ "ФК" Кредіплюс"</b> <i>(торгова марка FinX) - фінансова компанія, експерт у сфері споживчого кредитування фізичних осіб.<br>
+Офіси FinX розташовані в більшості міст України, наші співробітники професіонали своєї справи і завжди знайдуть для Вас краще рішення.<br>
+    Якщо Ви починаєте ремонт, хочете оновити побутову техніку, плануєте навчання дітей, зібралися у відпустку і Вам потрібна фінансова допомога - це до нас! До зустрічі!</i></p>
+
+
+
+{% block content %}
+{{ content }}
+{% endblock %}
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Авторизация</title>
+</head>
+
+ <style type="text/css">
+   TABLE {
+    border-collapse: collapse; /* Убираем двойные границы между ячейками */
+    border: 1px solid black; /* Рамка вокруг таблицы */
+   }
+   TD, TH {
+    padding: 5px; /* Поля вокруг текста */
+    border: 1px solid black; /* Рамка вокруг ячеек */
+   }
+  </style>
+
+<body>
+
+{% extends 'index.html' %}
+{% block content %}
+
+<br><br>
+
+<div style="color:red; font-weight: bold">
+{{ res_txt }}
+</div>
+
+<form action="" method="post">
+	<p>
+	    <label for="cou_row">Логин:</label><br>
+	    <input type="text" name="inp_login">
+        <br>
+        <label for="cou_row">Пароль:</label><br>
+        <input type="text" name="inp_pass">
+	</p>
+	<p>
+	    <input type="submit" value="Отправить">
+	</p>
+</form>
+
+{% endblock %}
+
+
+
+</body>
+</html>

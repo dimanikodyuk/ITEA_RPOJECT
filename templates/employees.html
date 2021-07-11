@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Сотрудники</title>
+</head>
+
+
+ <style type="text/css">
+   TABLE {
+    border-collapse: collapse; /* Убираем двойные границы между ячейками */
+    border: 1px solid black; /* Рамка вокруг таблицы */
+   }
+   TD, TH {
+    padding: 5px; /* Поля вокруг текста */
+    border: 1px solid black; /* Рамка вокруг ячеек */
+   }
+    #menu {
+        padding: 0;
+        margin: 0;
+        margin-left: 30%;
+        font-family:  Verdana;
+        font-weight: bold;
+        }
+    #menu li {
+        list-style: none;
+        float: left;
+        height: 30px;
+        padding: 0;
+        margin: 0;
+        width: 200px;
+        text-align: center;
+        background:  orange;
+        position: relative;
+        padding-top: 12px;
+        }
+    #menu li ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        width: 200px;
+        display: none;
+        position: absolute;
+        left: 0;
+        top: 42px;
+        }
+    #menu li ul li {
+        float: none;
+        height: 30px;
+        margin: 0;
+        width: 200px;
+        text-align: center;
+        background: #FF8C00;
+        }
+    #menu li a {
+        display: block;
+        width: 200px;
+        height: 30px;
+        color:    black;
+        text-decoration: none;
+        }
+    #menu li:hover ul{
+          display: block;
+          }
+    #menu li:hover{
+          background: #FF8C00;
+          }
+  </style>
+
+
+<body bgcolor="#FFE4B5">
+
+
+
+<header>
+    <ul id="menu" style="border: 1px;">
+        <li><a href="/">Домашняя</a></li>
+        <li>
+                <a href="#">Просмотр</a>
+                <ul>
+                        <li><a href="/get_all_emp">Сотрудники</a></li>
+                        <li><a href="/get_all_dep">Департаменты</a></li>
+                        <li><a href="/get_all_app">Заявки</a></li>
+                </ul>
+        </li>
+        <li><a href="/autorization">Авторизация</a></li>
+</ul>
+<br><br><br><br><br><br>
+</header>
+
+<h1>Поддержка компании FinX</h1>
+<p><b>ТОВ "ФК" Кредіплюс"</b> <i>(торгова марка FinX) - фінансова компанія, експерт у сфері споживчого кредитування фізичних осіб.<br>
+Офіси FinX розташовані в більшості міст України, наші співробітники професіонали своєї справи і завжди знайдуть для Вас краще рішення.<br>
+    Якщо Ви починаєте ремонт, хочете оновити побутову техніку, плануєте навчання дітей, зібралися у відпустку і Вам потрібна фінансова допомога - це до нас! До зустрічі!</i></p>
+
+<br><br>
+
+
+{% if user_roles == 2 %}
+
+ <div style="color:red; font-weight: bold">
+    {{ emp_result }}
+ </div>
+
+        <form action="" method="post">
+            <p>
+                <label for="cou_row">Укажите к-во записей (0 - вывод всех)</label><br>
+                <input type="text" name="cou_row" value="0">
+            </p>
+            <p>
+                <input type="submit">
+            </p>
+        </form>
+
+        <h2>Список сотрудников</h2>
+
+    <table >
+
+        <tr align="center" style="background: orange;" >
+            <td >ID</td>
+            <td>ФИО</td>
+            <td>Должность</td>
+            <td>Подразделение</td>
+        </tr>
+
+        {% for emp in employees_list %}
+        <tr>
+            <td align="center">{{ emp[0] }}</td>
+            <td>{{ emp[1] }}</td>
+            <td>{{ emp[2] }}</td>
+            <td align="center">{{ emp[3] }}</td>
+        </tr>
+        {% endfor %}
+</table>
+
+
+{% else %}
+
+ <div style="color:red; font-weight: bold">
+    {{ emp_result }}
+ </div>
+
+</table>
+
+{% endif %}
+
+
+</body>
+
+</html>

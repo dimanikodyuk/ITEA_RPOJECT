@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Заявки</title>
+</head>
+
+ <style type="text/css">
+   TABLE {
+    border-collapse: collapse; /* Убираем двойные границы между ячейками */
+    border: 1px solid black; /* Рамка вокруг таблицы */
+   }
+   TD, TH {
+    padding: 5px; /* Поля вокруг текста */
+    border: 1px solid black; /* Рамка вокруг ячеек */
+   }
+  </style>
+
+
+<body>
+
+{% extends 'index.html' %}
+
+{% block content %}
+
+<div style="color:red; font-weight: bold">
+{{ apply_info }}
+</div>
+
+<br><br>
+<form action="" method="post">
+	<p>
+	    <label for="cou_row">Укажите к-во записей (0 - вывод всех)</label><br>
+	    <input type="text" name="cou_row" value="0">
+	</p>
+	<p>
+	    <input type="submit">
+	</p>
+</form>
+
+<h2>Список заявок</h2>
+
+<table >
+    <tr align="center" style="background: orange;" >
+        <td >ID</td>
+        <td>Дата создания</td>
+        <td>Тип</td>
+        <td>Описание</td>
+        <td>Статус</td>
+        <td>Серийный номер</td>
+        <td>ФИО сотрудника</td>
+    </tr>
+    {% for app in app_list %}
+    <tr>
+        <td align="center">{{ app[0] }}</td>
+        <td align="center">{{ app[1] }}</td>
+        <td align="center">{{ app[2] }}</td>
+        <td >{{ app[3] }}</td>
+        <td >{{ app[4] }}</td>
+        <td align="center">{{ app[5] }}</td>
+        <td align="center">{{ app[6] }}</td>
+
+
+    </tr>
+    {% endfor %}
+
+</table>
+{% endblock %}
+
+
+
+</body>
+</html>
