@@ -2,18 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Сотрудники</title>
+    <title>Удаление сотрудника</title>
 </head>
 
-
  <style type="text/css">
-     #sel_size{
-         width:100px;
-     }
-     #button{
-         width:200px;
-         height: 50px;
-     }
    TABLE {
     border-collapse: collapse; /* Убираем двойные границы между ячейками */
     border: 1px solid black; /* Рамка вокруг таблицы */
@@ -74,10 +66,7 @@
           }
   </style>
 
-
 <body bgcolor="#FFE4B5">
-
-
 
 <header>
     <ul id="menu" style="border: 1px;">
@@ -102,71 +91,42 @@
 
 <br><br>
 
-
 {% if user_roles == 2 %}
 
- <div style="color:red; font-weight: bold">
+    <div style="color:red; font-weight: bold">
     {{ emp_result }}
- </div>
+    </div>
 
     <form action="" method="post">
         <p>
-            Выберите к-во отображаемых записей:
-            <br>
-            <select id="sel_size" size="1" name="cou_row">
-                <option disabled>Выберите к-во записей</option>
-                <option value="0">Все</option>
-                <option value="10">10</option>
-                <option value="50">50</option>
+            <label for="del_emp">Укажите сотрудника для удаления</label><br>
+
+             <select size="1" name="del_emp_id">
+                <option disabled>Выберите сотрудника со списка</option>
+
+                 {% for emp in employees_list %}
+                    <option value={{ emp[0] }}>{{ emp[1] }}</option>
+                 {% endfor %}
+
             </select>
 
-            <input id="sel_size" type="submit" value="Применить">
+            <br>
+        </p>
+        <p>
+            <input type="submit" value="Удалить">
         </p>
     </form>
 
-    <h2>Сотрудники</h2>
 
-    <form action="/create_emp" method="post">
-        <button id="button">Добавить сотрудника</button>
-    </form>
-
-    <form action="/update_emp" method="post">
-        <button id="button">Обновить сотрудника</button>
-    </form>
-
-    <form action="/delete_emp" method="post">
-        <button id="button">Удалить сотрудника</button>
-    </form>
-    <br>
-    <table >
-
-        <tr align="center" style="background: orange;" >
-            <td >ID</td>
-            <td>ФИО</td>
-            <td>Должность</td>
-            <td>Подразделение</td>
-        </tr>
-
-        {% for emp in employees_list %}
-        <tr>
-            <td align="center">{{ emp[0] }}</td>
-            <td>{{ emp[1] }}</td>
-            <td>{{ emp[2] }}</td>
-            <td align="center">{{ emp[3] }}</td>
-        </tr>
-        {% endfor %}
-    </table>
 
 {% else %}
 
-     <div style="color:red; font-weight: bold">
-        {{ emp_result }}
-     </div>
-
+    <div style="color:red; font-weight: bold">
+    {{ emp_result }}
+    </div>
 
 {% endif %}
 
 
 </body>
-
 </html>

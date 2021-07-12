@@ -6,6 +6,13 @@
 </head>
 
  <style type="text/css">
+     #sel_size{
+         width:100px;
+     }
+     #button{
+         width:200px;
+         height: 50px;
+     }
    TABLE {
     border-collapse: collapse; /* Убираем двойные границы между ячейками */
     border: 1px solid black; /* Рамка вокруг таблицы */
@@ -99,15 +106,35 @@
 
     <form action="" method="post">
         <p>
-            <label for="cou_row">Укажите к-во записей (0 - вывод всех)</label><br>
-            <input type="text" name="cou_row" value="0">
-        </p>
-        <p>
-            <input type="submit">
+
+            Выберите к-во отображаемых записей:
+            <br>
+            <select id="sel_size" size="1" name="cou_row">
+                <option disabled>Выберите к-во записей</option>
+                <option value="0">Все</option>
+                <option value="10">10</option>
+                <option value="50">50</option>
+            </select>
+
+            <input id="sel_size" type="submit" value="Применить">
         </p>
     </form>
 
-    <h2>Список подразделений</h2>
+
+    <!-- Меню -->
+    <h2>Департаменты</h2>
+
+        <form action="/create_dep" method="post">
+            <button id="button">Добавить департамент</button>
+        </form>
+        <form action="/update_dep" method="post">
+            <button id="button">Обновить департамент</button>
+        </form>
+        <form action="/delete_dep" method="post">
+            <button id="button">Удалить департамент</button>
+        </form>
+        <br>
+    <!-- Таблица департаментов -->
     <table >
         <tr align="center" style="background: orange;">
             <td>ID</td>
