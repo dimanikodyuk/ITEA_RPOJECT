@@ -6,6 +6,13 @@
 </head>
 
  <style type="text/css">
+      #sel_size{
+     width:100px;
+     }
+     #button{
+         width:200px;
+         height: 50px;
+     }
    TABLE {
     border-collapse: collapse; /* Убираем двойные границы между ячейками */
     border: 1px solid black; /* Рамка вокруг таблицы */
@@ -14,59 +21,155 @@
     padding: 5px; /* Поля вокруг текста */
     border: 1px solid black; /* Рамка вокруг ячеек */
    }
+   #menu {
+        padding: 0;
+        margin: 0;
+        margin-left: 30%;
+        font-family:  Verdana;
+        font-weight: bold;
+        }
+    #menu li {
+        list-style: none;
+        float: left;
+        height: 30px;
+        padding: 0;
+        margin: 0;
+        width: 200px;
+        text-align: center;
+        background:  orange;
+        position: relative;
+        padding-top: 12px;
+        }
+    #menu li ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        width: 200px;
+        display: none;
+        position: absolute;
+        left: 0;
+        top: 42px;
+        }
+    #menu li ul li {
+        float: none;
+        height: 30px;
+        margin: 0;
+        width: 200px;
+        text-align: center;
+        background: #FF8C00;
+        }
+    #menu li a {
+        display: block;
+        width: 200px;
+        height: 30px;
+        color:    black;
+        text-decoration: none;
+        }
+    #menu li:hover ul{
+          display: block;
+          }
+    #menu li:hover{
+          background: #FF8C00;
+          }
   </style>
 
 
-<body>
+<body bgcolor="#FFE4B5">
 
-{% extends 'index.html' %}
+<header>
+    <ul id="menu" style="border: 1px;">
+        <li><a href="/">Домашняя</a></li>
+        <li>
+                <a href="#">Просмотр</a>
+                <ul>
+                        <li><a href="/get_all_emp">Сотрудники</a></li>
+                        <li><a href="/get_all_dep">Департаменты</a></li>
+                        <li><a href="/get_all_app">Заявки</a></li>
+                </ul>
+        </li>
+        <li><a href="/authorization">Авторизация</a></li>
+</ul>
+<br><br><br><br><br><br>
+</header>
 
-{% block content %}
-
-<div style="color:red; font-weight: bold">
-{{ apply_info }}
-</div>
+<h1>Поддержка компании FinX</h1>
+<p><b>ТОВ "ФК" Кредіплюс"</b> <i>(торгова марка FinX) - фінансова компанія, експерт у сфері споживчого кредитування фізичних осіб.<br>
+Офіси FinX розташовані в більшості міст України, наші співробітники професіонали своєї справи і завжди знайдуть для Вас краще рішення.<br>
+    Якщо Ви починаєте ремонт, хочете оновити побутову техніку, плануєте навчання дітей, зібралися у відпустку і Вам потрібна фінансова допомога - це до нас! До зустрічі!</i></p>
 
 <br><br>
-<form action="" method="post">
-	<p>
-	    <label for="cou_row">Укажите к-во записей (0 - вывод всех)</label><br>
-	    <input type="text" name="cou_row" value="0">
-	</p>
-	<p>
-	    <input type="submit">
-	</p>
-</form>
 
-<h2>Список заявок</h2>
+{% if user_roles == 2 %}
 
-<table >
-    <tr align="center" style="background: orange;" >
-        <td >ID</td>
-        <td>Дата создания</td>
-        <td>Тип</td>
-        <td>Описание</td>
-        <td>Статус</td>
-        <td>Серийный номер</td>
-        <td>ФИО сотрудника</td>
-    </tr>
-    {% for app in app_list %}
-    <tr>
-        <td align="center">{{ app[0] }}</td>
-        <td align="center">{{ app[1] }}</td>
-        <td align="center">{{ app[2] }}</td>
-        <td >{{ app[3] }}</td>
-        <td >{{ app[4] }}</td>
-        <td align="center">{{ app[5] }}</td>
-        <td align="center">{{ app[6] }}</td>
+    <div style="color:red; font-weight: bold">
+    {{ apply_info }}
+    </div>
+
+    <form action="" method="post">
+        <p>
+
+            Выберите к-во отображаемых записей:
+            <br>
+            <select id="sel_size" size="1" name="cou_row">
+                <option disabled>Выберите к-во записей</option>
+                <option value="0">Все</option>
+                <option value="10">10</option>
+                <option value="50">50</option>
+            </select>
+
+            <input id="sel_size" type="submit" value="Применить">
+        </p>
+    </form>
 
 
-    </tr>
-    {% endfor %}
+    <!-- Меню -->
+    <h2>Департаменты</h2>
 
-</table>
-{% endblock %}
+        <form action="/update_dep" method="post">
+            <button id="button">Взять заявку в работу</button>
+        </form>
+        <form action="/delete_dep" method="post">
+            <button id="button">Мои заявки</button>
+        </form>
+        <br>
 
+    <!-- Таблица департаментов -->
+    <table >
+        <tr align="center" style="background: orange;">
+            <td>ID</td>
+            <td>Дата создания</td>
+            <td>Тип</td>
+            <td>Описание</td>
+            <td>Статус</td>
+            <td>Создатель</td>
+            <td>Исполнитель</td>
+            <td>Дата обновления</td>
+
+
+            </tr>
+
+            {% for app in app_list %}
+            <tr>
+            <td align="center">{{ app[0] }}</td>
+            <td>{{ app[1] }}</td>
+            <td>{{ app[2] }}</td>
+            <td>{{ app[3] }}</td>
+            <td>{{ app[4] }}</td>
+            <td>{{ app[5] }}</td>
+            <td>{{ app[6] }}</td>
+            <td>{{ app[7] }}</td>
+
+        </tr>
+        {% endfor %}
+    </table>
+
+{% else %}
+
+    <div style="color:red; font-weight: bold">
+    {{ dep_data }}
+    </div>
+
+{% endif %}
 
 
 </body>

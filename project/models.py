@@ -69,13 +69,13 @@ class Telegram_users(db.Model):
     is_subsribed = db.Column(db.Integer, nullable=False)
 
 
-class Customers(db.Model):
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    dt_add = db.Column(db.DateTime, nullable=False)
-    full_name = db.Column(db.String(100), nullable=False)
-    login = db.Column(db.String(100), nullable=False)
-    password = db.Column(db.String(100), nullable=False)
-    dt_upd = db.Column(db.DateTime, nullable=False)
+# class Customers(db.Model):
+#     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+#     dt_add = db.Column(db.DateTime, nullable=False)
+#     full_name = db.Column(db.String(100), nullable=False)
+#     login = db.Column(db.String(100), nullable=False)
+#     password = db.Column(db.String(100), nullable=False)
+#     dt_upd = db.Column(db.DateTime, nullable=False)
 
 
 class Sessions(db.Model):
@@ -84,6 +84,17 @@ class Sessions(db.Model):
     dt_add = db.Column(db.DateTime, nullable=False)
     dt_session_logout = db.Column(db.DateTime, nullable=False)
     role_id = db.Column(db.Integer, nullable=False)
+
+class Application(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    dt_add = db.Column(db.DateTime, nullable=False)
+    type = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    status = db.Column(db.String(50), nullable=False)
+    code = db.Column(db.String(100), nullable=False)
+    creator_id = db.Column(db.Integer, db.ForeignKey('telegram_users.id', ondelete='SET NULL'), nullable=False)
+    executor_id = db.Column(db.Integer, db.ForeignKey('employees.id', ondelete='SET NULL'), nullable=False)
+    dt_upd = db.Column(db.DateTime, nullable=False)
 
 
 def create_log(p_source, p_comment):
@@ -159,4 +170,18 @@ def get_dictionary_value_list(p_dict_type_id):
     dict = db.session.query(Dictionary.id, Dictionary.description).filter(Dictionary.type_id == p_dict_type_id).all()
     for i in dict:
         res_arr.append((i['id'], i['description']))
+    return res_arr
+
+
+# Получить список всех заявок, входной параметр - к-во записей
+def get_app_list(p_count_row=0):
+    res_arr = []
+    if p_count_row == 0:
+        app_all = db.session.query(Application).all()
+    else:
+        app_all = db.session.query(Application).limit(p_count_row).all()
+    for i in app_all:
+        res_arr.append((i.__dict__['id'], i.__dict__['dt_add'], i.__dict__['type'], i.__dict__['description'],
+                        i.__dict__['status'], i.__dict__['code'], i.__dict__['creator_id'], i.__dict__['executor_id'],
+                        i.__dict__['dt_upd']))
     return res_arr
