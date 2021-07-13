@@ -8,10 +8,12 @@ my_apply = Flask("ITEA_PROJECT")
 my_apply.config['SQLALCHEMY_DATABASE_URI'] = DB_URL
 db = SQLAlchemy(my_apply)
 
+
 class Dictionary_type(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(150), nullable=False)
     description = db.Column(db.Text, nullable=False)
+
 
 class Dictionary(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -20,11 +22,13 @@ class Dictionary(db.Model):
     description = db.Column(db.String(100), nullable=False)
     type_id = db.Column(db.Integer, db.ForeignKey('dictionary_type.id', ondelete='SET NULL'), nullable=False)
 
+
 class Departments(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     dt_add = db.Column(db.DateTime, nullable=False)
     dep_name = db.Column(db.String(100), nullable=False)
     dt_upd = db.Column(db.DateTime, nullable=False)
+
 
 class Employees(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -36,11 +40,13 @@ class Employees(db.Model):
     password = db.Column(db.String(100), nullable=False)
     dt_update = db.Column(db.DateTime, nullable=False)
 
+
 class Log(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     dt_add = db.Column(db.DateTime, nullable=False)
     source = db.Column(db.String(100), nullable=False)
     comment = db.Column(db.Text, nullable=False)
+
 
 class Telegram_logs(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -49,6 +55,7 @@ class Telegram_logs(db.Model):
     chat_id = db.Column(db.Integer, nullable=False)
     message = db.Column(db.Text, nullable=False)
     type = db.Column(db.String(100), nullable=False)
+
 
 class Telegram_users(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -61,6 +68,7 @@ class Telegram_users(db.Model):
     phone = db.Column(db.String(100), nullable=False)
     is_subsribed = db.Column(db.Integer, nullable=False)
 
+
 class Customers(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     dt_add = db.Column(db.DateTime, nullable=False)
@@ -69,6 +77,7 @@ class Customers(db.Model):
     password = db.Column(db.String(100), nullable=False)
     dt_upd = db.Column(db.DateTime, nullable=False)
 
+
 class Sessions(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     ip_connect = db.Column(db.String(100), nullable=False)
@@ -76,11 +85,13 @@ class Sessions(db.Model):
     dt_session_logout = db.Column(db.DateTime, nullable=False)
     role_id = db.Column(db.Integer, nullable=False)
 
+
 def create_log(p_source, p_comment):
     dt = datetime.now()
     log = Log(dt_add=dt, source=p_source, comment=p_comment)
     db.session.add(log)
     db.session.commit()
+
 
 # Проверка наличия департамента в БД по названию
 def check_dep_name(p_dep_name):
@@ -90,6 +101,7 @@ def check_dep_name(p_dep_name):
     res = db.session.execute(sql_dep).fetchone()
     return res
 
+
 # Проверка наличия департамента в БД по id
 def check_dep_id(p_dep_id):
     # запрос в БД
@@ -97,6 +109,7 @@ def check_dep_id(p_dep_id):
     # выполнение запроса
     res = db.session.execute(sql_dep).fetchone()
     return res
+
 
 # Получить список всех департаментов, входной параметр - к-во записей
 def get_dep_list(p_count_row=0):
@@ -109,6 +122,7 @@ def get_dep_list(p_count_row=0):
         res_arr.append((i.__dict__['id'], i.__dict__['dep_name']))
     return res_arr
 
+
 # Проверка наличия сотрудника в БД по ФИО
 def check_emp(p_fio):
     # запрос в БД
@@ -117,6 +131,7 @@ def check_emp(p_fio):
     res = db.session.execute(sql_dep).fetchone()
     return res
 
+
 # Проверка наличия сотрудника в БД по id
 def check_emp_id(p_emp_id):
     # запрос в БД
@@ -124,6 +139,7 @@ def check_emp_id(p_emp_id):
     # выполнение запроса
     res = db.session.execute(sql_dep).fetchone()
     return res
+
 
 # Получить список всех сотрудников, входной параметр - к-во записей
 def get_emp_list(p_count_row=0):
@@ -135,6 +151,7 @@ def get_emp_list(p_count_row=0):
     for i in emp_all:
         res_arr.append((i.__dict__['id'], i.__dict__['full_name'], i.__dict__['position'], i.__dict__['department_id']))
     return res_arr
+
 
 # Вывод значений словаря по type_id
 def get_dictionary_value_list(p_dict_type_id):

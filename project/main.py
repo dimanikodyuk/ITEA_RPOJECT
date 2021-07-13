@@ -1,12 +1,10 @@
 from datetime import datetime
-from telebot import TeleBot, types
 from flask import Flask, request, render_template
 from flask_sqlalchemy import SQLAlchemy
 import json
 from models import (my_apply, db, Departments, Employees, Dictionary, Dictionary_type, Log, Telegram_logs,
                     Telegram_users, Customers, Sessions, check_dep_name, check_dep_id, get_dep_list, create_log,
                     check_emp_id, check_emp, get_emp_list, get_dictionary_value_list)
-import uuid
 
 # Очистка всех сессий (таблица crm.sessions)
 db.session.query(Sessions).delete()
@@ -92,15 +90,12 @@ def authorization():
 def create_dep():
     res_session = check_active_session(request.environ['REMOTE_ADDR'])
     dep_name = request.form.get('dep_name')
-    print("DEP_NAME: ", dep_name)
     if dep_name is not None:
         dt = datetime.now()
         check_dep = check_dep_name(dep_name)
         if check_dep is not None:
             return render_template("departments_add.html", dep_list="",
                                    dep_data="В системе уже есть департамент с таким именем", user_roles=res_session[0])
-            print("Ура, мы получили название департамента")
-            print("Результат проверки: ", check_dep)
         else:
             dep_cr = Departments(dt_add=dt, dep_name=dep_name, dt_upd=dt)
             db.session.add(dep_cr)
@@ -162,7 +157,7 @@ def delete_dep_by_id():
             return render_template("departments_delete.html", dep_list=dep_list, dep_data=log_text,
                                    user_roles=res_session[0])
     else:
-        return render_template("departments_delete.html", dep_list=dep_list, dep_data="", user_roles=res_session[0])
+        return render_template("departments_delete.html", dep_list="", dep_data="", user_roles="")
 
 
 @my_apply.route("/get_all_dep", methods=["GET", "POST"])
@@ -199,9 +194,9 @@ def create_emp():
             check_employees = check_emp(full_name)
 
             if check_employees is not None:
-                return render_template("employee.employees_add",
-                                       emp_result=f"Сотрудник с таким ФИО уже существует, его id: {check_employees}"
-                                       , occupation="", departments="", user_roles=res_session[0])
+                return render_template("employees_add.html",
+                                       emp_result=f"Сотрудник с таким ФИО уже существует, его id: {check_employees}",
+                                       occupation="", departments="", user_roles=res_session[0])
             else:
                 emp_create = Employees(dt_add=dt, full_name=full_name, position=position, department_id=departments,
                                        login=login,
@@ -283,7 +278,7 @@ def delete_emp():
                                user_roles=res_session[0])
     else:
         return render_template("employees_delete.html", emp_result="Выберите сотрудника для удаления",
-                               employees_list=emp_list, user_roles=res_session[0])
+                               employees_list=emp_list, user_roles="")
 
 
 @my_apply.route("/get_all_emp", methods=["GET", "POST"])
