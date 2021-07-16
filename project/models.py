@@ -66,7 +66,7 @@ class Telegram_users(db.Model):
     password = db.Column(db.String(100), nullable=False)
     role = db.Column(db.Integer, db.ForeignKey('dictionary.id', ondelete='SET NULL'), nullable=False)
     phone = db.Column(db.String(100), nullable=False)
-    is_subsribed = db.Column(db.Integer, nullable=False)
+    is_subsсribed = db.Column(db.Integer, nullable=False)
 
 
 # class Customers(db.Model):
