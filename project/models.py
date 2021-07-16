@@ -2,7 +2,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 
-DB_URL = "sqlite:///crm.db"
+DB_URL = "sqlite:///project/crm.db"
 
 my_apply = Flask("ITEA_PROJECT")
 my_apply.config['SQLALCHEMY_DATABASE_URI'] = DB_URL
