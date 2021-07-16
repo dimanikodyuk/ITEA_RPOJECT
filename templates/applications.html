@@ -88,6 +88,9 @@
                 </ul>
         </li>
         <li><a href="/authorization">Авторизация</a></li>
+        {% if emp_id > 0 %}
+        <li style="visibility:hidden;"><a href="/">{{ emp_id }}</a></li>
+        {% endif %}
 </ul>
 <br><br><br><br><br><br>
 </header>
@@ -123,12 +126,10 @@
 
 
     <!-- Меню -->
-    <h2>Департаменты</h2>
+    <h2>Заявки</h2>
 
-        <form action="/update_dep" method="post">
-            <button id="button">Взять заявку в работу</button>
-        </form>
-        <form action="/delete_dep" method="post">
+
+        <form action="/my_app" method="post">
             <button id="button">Мои заявки</button>
         </form>
         <br>
@@ -142,8 +143,8 @@
             <td>Описание</td>
             <td>Статус</td>
             <td>Создатель</td>
-            <td>Исполнитель</td>
             <td>Дата обновления</td>
+            <td></td>
 
 
             </tr>
@@ -155,9 +156,14 @@
             <td>{{ app[2] }}</td>
             <td>{{ app[3] }}</td>
             <td>{{ app[4] }}</td>
-            <td>{{ app[5] }}</td>
-            <td>{{ app[6] }}</td>
             <td>{{ app[7] }}</td>
+            <td>{{ app[8] }}</td>
+
+            <td>
+                <form action="/set_executor_apply/{{ app[0] }}" method="post">
+                <button id="button">В роботу</button>
+                </form>
+            </td>
 
         </tr>
         {% endfor %}
@@ -167,6 +173,7 @@
 
     <div style="color:red; font-weight: bold">
     {{ dep_data }}
+
     </div>
 
 {% endif %}

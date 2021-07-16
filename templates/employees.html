@@ -91,6 +91,9 @@
                 </ul>
         </li>
         <li><a href="/authorization">Авторизация</a></li>
+         {% if emp_id > 0 %}
+                <li style="visibility:hidden;"><a href="/">{{ emp_id }}</a></li>
+                {% endif %}
 </ul>
 <br><br><br><br><br><br>
 </header>
@@ -144,7 +147,6 @@
             <td >ID</td>
             <td>ФИО</td>
             <td>Должность</td>
-            <td>Подразделение</td>
         </tr>
 
         {% for emp in employees_list %}
@@ -152,7 +154,6 @@
             <td align="center">{{ emp[0] }}</td>
             <td>{{ emp[1] }}</td>
             <td>{{ emp[2] }}</td>
-            <td align="center">{{ emp[3] }}</td>
         </tr>
         {% endfor %}
     </table>

@@ -2,10 +2,17 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Удаление сотрудника</title>
+    <title>Заявки мои</title>
 </head>
 
  <style type="text/css">
+      #sel_size{
+     width:100px;
+     }
+     #button{
+         width:200px;
+         height: 50px;
+     }
    TABLE {
     border-collapse: collapse; /* Убираем двойные границы между ячейками */
     border: 1px solid black; /* Рамка вокруг таблицы */
@@ -14,7 +21,7 @@
     padding: 5px; /* Поля вокруг текста */
     border: 1px solid black; /* Рамка вокруг ячеек */
    }
-    #menu {
+   #menu {
         padding: 0;
         margin: 0;
         margin-left: 30%;
@@ -66,6 +73,7 @@
           }
   </style>
 
+
 <body bgcolor="#FFE4B5">
 
 <header>
@@ -80,9 +88,9 @@
                 </ul>
         </li>
         <li><a href="/authorization">Авторизация</a></li>
-         {% if emp_id > 0 %}
-                <li style="visibility:hidden;"><a href="/">{{ emp_id }}</a></li>
-                {% endif %}
+        {% if emp_id > 0 %}
+        <li style="visibility:hidden;"><a href="/">{{ emp_id }}</a></li>
+        {% endif %}
 </ul>
 <br><br><br><br><br><br>
 </header>
@@ -97,35 +105,65 @@
 {% if user_roles == 2 %}
 
     <div style="color:red; font-weight: bold">
-    {{ emp_result }}
+    {{ apply_info }}
     </div>
 
     <form action="" method="post">
         <p>
-            <label for="del_emp">Укажите сотрудника для удаления</label><br>
 
-             <select size="1" name="del_emp_id">
-                <option disabled>Выберите сотрудника со списка</option>
-
-                 {% for emp in employees_list %}
-                    <option value={{ emp[0] }}>{{ emp[1] }}</option>
-                 {% endfor %}
-
+            Выберите к-во отображаемых записей:
+            <br>
+            <select id="sel_size" size="1" name="cou_row">
+                <option disabled>Выберите к-во записей</option>
+                <option value="0">Все</option>
+                <option value="10">10</option>
+                <option value="50">50</option>
             </select>
 
-            <br>
-        </p>
-        <p>
-            <input type="submit" value="Удалить">
+            <input id="sel_size" type="submit" value="Применить">
         </p>
     </form>
 
 
+    <!-- Меню -->
+    <h2>Мои заявки</h2>
+
+        <br>
+
+    <!-- Таблица департаментов -->
+    <table >
+        <tr align="center" style="background: orange;">
+            <td>ID</td>
+            <td>Дата создания</td>
+            <td>Тип</td>
+            <td>Описание</td>
+            <td>Статус</td>
+            <td>Создатель</td>
+            <td>Дата обновления</td>
+
+
+            </tr>
+
+            {% for app in app_list %}
+            <tr>
+            <td align="center">{{ app[0] }}</td>
+            <td>{{ app[1] }}</td>
+            <td>{{ app[2] }}</td>
+            <td>{{ app[3] }}</td>
+            <td>{{ app[4] }}</td>
+            <td>{{ app[7] }}</td>
+            <td>{{ app[8] }}</td>
+
+
+        </tr>
+        {% endfor %}
+    </table>
 
 {% else %}
 
     <div style="color:red; font-weight: bold">
-    {{ emp_result }}
+    {{ dep_data }}
+
     </div>
 
 {% endif %}

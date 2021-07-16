@@ -1,18 +1,22 @@
-from flask import request, render_template
-from models import (my_apply, db, Departments, Employees, Dictionary, Dictionary_type, Log, Telegram_logs,
+from flask import render_template
+from models import (my_apply, db, request, Departments, Employees, Dictionary, Dictionary_type, Log, Telegram_logs,
                     Telegram_users, Application, Sessions, check_dep_name, check_dep_id, get_dep_list, create_log,
-                    check_emp_id, check_emp, get_emp_list, get_dictionary_value_list, get_app_list)
+                    check_emp_id, check_emp, get_emp_list, get_dictionary_value_list, get_app_list,
+                    get_emp_id_by_session, get_app_list_by_emp)
 from datetime import datetime
 
 
 @my_apply.route('/', methods=["GET", "POST"])
 @my_apply.route('/main', methods=["GET", "POST"])
 def homepage():
-    res = check_active_session(request.environ['REMOTE_ADDR'])
+    ip = request.environ['REMOTE_ADDR']
+    res = check_active_session(ip)
+    emp_id = get_emp_id_by_session(ip)
+
     if res is None:
-        return render_template("index.html")
+        return render_template("index.html", emp_id=0)
     else:
-        return render_template("index.html", user_role=res[0])
+        return render_template("index.html", emp_id=emp_id[0], user_role=res[0])
 
 
 def check_active_session(p_ip_connect):
@@ -22,23 +26,36 @@ def check_active_session(p_ip_connect):
     db.session.execute(del_old_sess)
     db.session.commit()
     # Проверяем активную сессию
-    sql_check = db.select(Sessions.role_id).where(
+
+    sql_check = db.select(Sessions.role_id, Sessions.emp_id).where(
         db.and_(Sessions.ip_connect == f'{p_ip_connect}', Sessions.dt_session_logout > dt))
     res = db.session.execute(sql_check).fetchone()
     return res
 
 
+def create_session(p_ip_connect, p_user_roles, p_login):
+    dt = datetime.now()
+
+    sql_dep = db.select(Employees.id).where(Employees.login == f'{p_login}')
+    res = db.session.execute(sql_dep).fetchone()
+
+    cr_session = Sessions(ip_connect=p_ip_connect, dt_add=dt, role_id=p_user_roles, emp_id=res[0])
+    db.session.add(cr_session)
+    db.session.commit()
+
+
 @my_apply.route("/authorization", methods=["GET", "POST"])
 def authorization():
-    res_session = check_active_session(request.environ['REMOTE_ADDR'])
+
+    #  Считываем логин и пароль с формы сайта
+    inp_login = request.form.get('inp_login')
+    inp_pass = request.form.get('inp_pass')
+    ip_conn = request.environ['REMOTE_ADDR']
+    res_session = check_active_session(ip_conn)
     print(res_session)
     # Если за указанным IP адрессом есть активная сессия
     if res_session is None:
         if request.method == "POST":
-
-            #  Считываем логин и пароль с формы сайта
-            inp_login = request.form.get('inp_login')
-            inp_pass = request.form.get('inp_pass')
 
             # Проверяем сперва сотрудник ли это
             sql_emp = db.select(Employees.id).where(
@@ -55,19 +72,13 @@ def authorization():
                 else:
                     # Права пользователя
                     user_roles = 3
-                    dt = datetime.now()
-                    cr_session = Sessions(ip_connect=request.environ['REMOTE_ADDR'], dt_add=dt, role_id=user_roles)
-                    db.session.add(cr_session)
-                    db.session.commit()
+                    create_session(ip_conn, user_roles, inp_login)
                     return render_template("authorization.html", res_txt="Авторизация прошла успешно",
                                            user_role=user_roles)
             else:
                 # Права сотрудника
                 user_roles = 2
-                dt = datetime.now()
-                cr_session = Sessions(ip_connect=request.environ['REMOTE_ADDR'], dt_add=dt, role_id=user_roles)
-                db.session.add(cr_session)
-                db.session.commit()
+                create_session(ip_conn, user_roles, inp_login)
 
                 return render_template("authorization.html", res_txt="Авторизация прошла успешно", user_role=user_roles)
         else:
@@ -80,13 +91,16 @@ def authorization():
 # Создание нового департамента
 @my_apply.route("/create_dep", methods=["POST"])
 def create_dep():
-    res_session = check_active_session(request.environ['REMOTE_ADDR'])
+    ip = request.environ['REMOTE_ADDR']
+    res_session = check_active_session(ip)
+    emp_id = get_emp_id_by_session(ip)
+
     dep_name = request.form.get('dep_name')
     if dep_name is not None:
         dt = datetime.now()
         check_dep = check_dep_name(dep_name)
         if check_dep is not None:
-            return render_template("departments_add.html", dep_list="",
+            return render_template("departments_add.html", dep_list="", emp_id=emp_id[0],
                                    dep_data="В системе уже есть департамент с таким именем", user_roles=res_session[0])
         else:
             dep_cr = Departments(dt_add=dt, dep_name=dep_name, dt_upd=dt)
@@ -97,14 +111,17 @@ def create_dep():
             log_text = f"Добавлен департамент с именем dep_name: {dep_name}"
             create_log(source, log_text)
 
-            return render_template("departments_add.html", dep_list="", dep_data=log_text, user_roles=res_session[0])
-    return render_template("departments_add.html", dep_list="", dep_data="", user_roles=res_session[0])
+            return render_template("departments_add.html", dep_list="", emp_id=emp_id[0], dep_data=log_text,
+                                   user_roles=res_session[0])
+    return render_template("departments_add.html", dep_list="", dep_data="", emp_id=0, user_roles=res_session[0])
 
 
 # Обновление департамента по id
 @my_apply.route("/update_dep", methods=["POST"])
 def update_dep():
-    res_session = check_active_session(request.environ['REMOTE_ADDR'])
+    ip = request.environ['REMOTE_ADDR']
+    res_session = check_active_session(ip)
+    emp_id = get_emp_id_by_session(ip)
 
     dep_list = get_dep_list()
     print("DEP_LIST:", dep_list)
@@ -125,15 +142,19 @@ def update_dep():
 
         res_txt = f"Успешно обновлено название департамента с id {old_dep_id} на {new_dep_name}"
         return render_template("departments_update.html", dep_list=dep_list, dep_data=res_txt,
-                               user_roles=res_session[0])
+                               emp_id=emp_id[0], user_roles=res_session[0])
     else:
-        return render_template("departments_update.html", dep_list=dep_list, dep_data="", user_roles=res_session[0])
+        return render_template("departments_update.html", emp_id=emp_id[0], dep_list=dep_list, dep_data="",
+                               user_roles=res_session[0])
 
 
 # Удаление департамента
 @my_apply.route("/delete_dep", methods=["POST"])
 def delete_dep_by_id():
-    res_session = check_active_session(request.environ['REMOTE_ADDR'])
+    ip = request.environ['REMOTE_ADDR']
+    res_session = check_active_session(ip)
+    emp_id = get_emp_id_by_session(ip)
+
     if res_session is not None:
         dep_list = get_dep_list()
 
@@ -147,18 +168,22 @@ def delete_dep_by_id():
             log_text = f"Удалён департамент с id {dep_id}"
             create_log(source, log_text)
 
-            return render_template("departments_delete.html", dep_list=dep_list, dep_data=log_text,
+            return render_template("departments_delete.html", dep_list=dep_list, emp_id=emp_id[0], dep_data=log_text,
                                    user_roles=res_session[0])
+        return render_template("departments_delete.html", dep_list=dep_list, emp_id=emp_id[0], dep_data="",
+                               user_roles=res_session[0])
     else:
-        return render_template("departments_delete.html", dep_list="", dep_data="", user_roles="")
+        return render_template("departments_delete.html", dep_list="", dep_data="", emp_id=0, user_roles="")
 
 
 # Получение всех департаментов
 @my_apply.route("/get_all_dep", methods=["GET", "POST"])
 def get_all_dep():
-    res_session = check_active_session(request.environ['REMOTE_ADDR'])
+    ip = request.environ['REMOTE_ADDR']
+    res_session = check_active_session(ip)
+    emp_id = get_emp_id_by_session(ip)
     if res_session is None:
-        return render_template("departments.html", dep_list="", dep_data="Вы не авторизированы", user_roles="")
+        return render_template("departments.html", dep_list="", emp_id=0, dep_data="Вы не авторизированы", user_roles="")
     else:
         cou_row = request.form.get('cou_row')
 
@@ -166,15 +191,18 @@ def get_all_dep():
             dep_list = get_dep_list()
         else:
             dep_list = get_dep_list(cou_row)
-        return render_template("departments.html", dep_list=dep_list, user_roles=res_session[0])
+        return render_template("departments.html", dep_list=dep_list, emp_id=emp_id[0],user_roles=res_session[0])
 
 
 # Создание сотрудника
 @my_apply.route("/create_emp", methods=["POST"])
 def create_emp():
-    res_session = check_active_session(request.environ['REMOTE_ADDR'])
+    ip = request.environ['REMOTE_ADDR']
+    res_session = check_active_session(ip)
+    emp_id = get_emp_id_by_session(ip)
     if res_session is None:
-        return render_template("employees_add.html", emp_result="", occupation="", departments="", user_roles="")
+        return render_template("employees_add.html", emp_result="", occupation="", emp_id=emp_id[0], departments="",
+                               user_roles="")
     else:
         dict_occupation = get_dictionary_value_list(1)
         dict_departments = get_dep_list()
@@ -191,11 +219,10 @@ def create_emp():
             if check_employees is not None:
                 return render_template("employees_add.html",
                                        emp_result=f"Сотрудник с таким ФИО уже существует, его id: {check_employees}",
-                                       occupation="", departments="", user_roles=res_session[0])
+                                       occupation="", departments="", emp_id=emp_id[0], user_roles=res_session[0])
             else:
                 emp_create = Employees(dt_add=dt, full_name=full_name, position=position, department_id=departments,
-                                       login=login,
-                                       password=11111111, dt_update=dt)
+                                       login=login, password=11111111, dt_update=dt)
                 db.session.add(emp_create)
                 db.session.flush()
 
@@ -206,14 +233,16 @@ def create_emp():
 
                 return render_template("employees_add.html", emp_result="Добавлен новый сотрудник")
 
-        return render_template("employees_add.html", emp_result="", occupation=dict_occupation,
+        return render_template("employees_add.html", emp_result="", emp_id=emp_id[0], occupation=dict_occupation,
                                departments=dict_departments, user_roles=res_session[0])
 
 
 # Обновление данных сотрудника
 @my_apply.route("/update_emp", methods=["POST"])
 def update_emp():
-    res_session = check_active_session(request.environ['REMOTE_ADDR'])
+    ip = request.environ['REMOTE_ADDR']
+    res_session = check_active_session(ip)
+    emp_ids = get_emp_id_by_session(ip)
     dict_occupation = get_dictionary_value_list(1)
     dict_departments = get_dep_list()
     dict_employees = get_emp_list()
@@ -240,20 +269,22 @@ def update_emp():
             log_text = f"Обновлен сотрёдник с id {emp_id}"
             create_log(source, log_text)
             return render_template("employees_update.html", emp_result=log_text, occupation=dict_occupation,
-                                   departments=dict_departments, employees_list=dict_employees,
+                                   departments=dict_departments, emp_id=emp_ids[0], employees_list=dict_employees,
                                    user_roles=res_session[0])
-        return render_template("employees_update.html", emp_result="", occupation=dict_occupation,
+        return render_template("employees_update.html", emp_result="", occupation=dict_occupation, emp_id=emp_ids[0],
                                departments=dict_departments, employees_list=dict_employees, user_roles=res_session[0])
     else:
         return render_template("employees_update.html", emp_result="Вы не авторизированы", occupation="",
-                               departments="", employees_list="",
-                               user_roles="")
+                               departments="", employees_list="", emp_id=0, user_roles="")
 
 
 # Удаление сотрудника
 @my_apply.route("/delete_emp", methods=["POST"])
 def delete_emp():
-    res_session = check_active_session(request.environ['REMOTE_ADDR'])
+    ip = request.environ['REMOTE_ADDR']
+    res_session = check_active_session(ip)
+    emp_ids = get_emp_id_by_session(ip)
+
     emp_list = get_emp_list()
 
     if res_session is not None:
@@ -269,19 +300,21 @@ def delete_emp():
             create_log(source, log_text)
 
             return render_template("employees_delete.html", emp_result=log_text, employees_list=emp_list,
-                                   user_roles=res_session[0])
+                                   emp_id=emp_ids[0], user_roles=res_session[0])
 
         return render_template("employees_delete.html", emp_result="", employees_list=emp_list,
-                               user_roles=res_session[0])
+                               emp_id=emp_ids[0], user_roles=res_session[0])
     else:
         return render_template("employees_delete.html", emp_result="Выберите сотрудника для удаления",
-                               employees_list=emp_list, user_roles="")
+                               emp_id=emp_ids[0], employees_list=emp_list, user_roles="")
 
 
 # Получение данных всех сотрудников
 @my_apply.route("/get_all_emp", methods=["GET", "POST"])
 def get_all_emp():
-    res_session = check_active_session(request.environ['REMOTE_ADDR'])
+    ip = request.environ['REMOTE_ADDR']
+    res_session = check_active_session(ip)
+    emp_ids = get_emp_id_by_session(ip)
     if res_session is None:
         return render_template("employees.html", employees_list="", user_roles="", emp_result="Вы не авторизированы")
     else:
@@ -290,7 +323,8 @@ def get_all_emp():
             emp_list = get_emp_list()
         else:
             emp_list = get_emp_list(cou_row)
-        return render_template("employees.html", employees_list=emp_list, user_roles=res_session[0], emp_result="")
+        return render_template("employees.html", employees_list=emp_list, emp_id=emp_ids[0],
+                               user_roles=res_session[0], emp_result="")
 
 
 # @my_apply.route("/create_apply", methods=["POST"])
@@ -391,14 +425,65 @@ def get_all_emp():
 
 @my_apply.route("/get_all_app", methods=["GET", "POST"])
 def get_all_app():
-    res_session = check_active_session(request.environ['REMOTE_ADDR'])
+    ip = request.environ['REMOTE_ADDR']
+    res_session = check_active_session(ip)
+    emp_ids = get_emp_id_by_session(ip)
+    cou_row = 0
     if res_session is None:
         return render_template("applications.html", employees_list="", user_roles="", emp_result="Вы не авторизированы")
     else:
         cou_row = request.form.get('cou_row')
+        print("COU_ROW: ", cou_row)
         if cou_row == "0":
             app_list = get_app_list()
         else:
             app_list = get_app_list(cou_row)
-        return render_template("applications.html", app_list=app_list, apply_info="", user_roles=res_session[0])
+        return render_template("applications.html", app_list=app_list, apply_info="",emp_id=emp_ids[0],
+                               user_roles=res_session[0])
     return render_template("applications.html", app_list="", apply_info="Вы не авторизированы", user_roles="")
+
+
+@my_apply.route("/set_executor_apply/<int:app_id>", methods=["POST"])
+def set_executor_apply(app_id):
+    ip = request.environ['REMOTE_ADDR']
+    res_session = check_active_session(ip)
+    emp_id = get_emp_id_by_session(ip)
+
+    if res_session is not None:
+            sql_app = db.select(Application.id).where(Application.id == f'{app_id}')
+            res = db.session.execute(sql_app).fetchone()
+
+            app = Application.query.get(res)
+
+            app.executor_id = emp_id[0]
+            db.session.commit()
+
+            source = "/update_emp"
+            log_text = f"Обновлен сотрудник по заявке: {app} на {emp_id[0]}"
+            create_log(source, log_text)
+
+            app_list = get_app_list()
+
+            return render_template("applications.html", app_list=app_list, apply_info="Заявку взято в роботу",
+                                   emp_id=emp_id[0], user_roles=res_session[0])
+    else:
+        return render_template("applications.html", app_list="", apply_info="", emp_id=0, user_roles=res_session[0])
+
+
+@my_apply.route("/my_app", methods=["GET", "POST"])
+def my_app():
+    ip = request.environ['REMOTE_ADDR']
+    res_session = check_active_session(ip)
+    emp_ids = get_emp_id_by_session(ip)
+
+    if res_session is None:
+        return render_template("applications_by_emp.html", employees_list="", user_roles="", emp_result="Вы не авторизированы")
+    else:
+        cou_row = request.form.get('cou_row')
+        if cou_row == "0":
+            app_list = get_app_list_by_emp(cou_row, emp_ids[0])
+        else:
+            app_list = get_app_list_by_emp(cou_row, emp_ids[0])
+        return render_template("applications_by_emp.html", app_list=app_list, apply_info="", emp_id=emp_ids[0],
+                               user_roles=res_session[0])
+    return render_template("applications_by_emp.html", app_list="", apply_info="Вы не авторизированы", user_roles="")

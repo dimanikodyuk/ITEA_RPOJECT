@@ -78,8 +78,12 @@
                         <li><a href="/get_all_dep">Департаменты</a></li>
                         <li><a href="/get_all_app">Заявки</a></li>
                 </ul>
+
         </li>
         <li><a href="/authorization">Авторизация</a></li>
+         {% if emp_id > 0 %}
+                <li style="visibility:hidden;"><a href="/">{{ emp_id }}</a></li>
+                {% endif %}
 </ul>
 <br><br><br><br><br><br>
 </header>
