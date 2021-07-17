@@ -354,7 +354,7 @@ def telegram_logs(p_nickname, p_chat_id, p_message, p_type):
     db.session.commit()
 
 
-# Проверка наличия департамента в БД по названию
+# Проверка наличия департамента в БД
 def check_dep(p_type, p_val):
     if p_type == 1:
         sql_dep = db.select(Departments.id).where(Departments.dep_name == f'{p_val}')
@@ -409,6 +409,7 @@ def get_dictionary_value_list(p_dict_type_id):
     return res_arr
 
 
+# Получения id сотрудника по ІР сессии
 def get_emp_id_by_session(p_ip):
     dt = datetime.now()
     sql_check = db.select(Sessions.emp_id).where(
@@ -417,6 +418,7 @@ def get_emp_id_by_session(p_ip):
     return res
 
 
+# Получить все заявки
 def get_app_list(p_count_row=0, p_filter_id=-1, p_filter_value=-1):
     res_arr = []
     app_all = 0
@@ -462,6 +464,7 @@ def get_app_list(p_count_row=0, p_filter_id=-1, p_filter_value=-1):
     return res_arr
 
 
+# Получить заявки по определенному сотруднику
 def get_app_list_by_emp(p_count_row=0, p_emp_id=0):
     res_arr = []
     if p_count_row == "0":
@@ -480,6 +483,7 @@ def get_app_list_by_emp(p_count_row=0, p_emp_id=0):
     return res_arr
 
 
+# Получить комментарии по заявке
 def get_comment_by_apply(p_apply_id):
     res_arr = []
     app = db.session.query(Application_comment, Telegram_users).outerjoin(Telegram_users).where(db.and_(db.or_(
@@ -491,6 +495,7 @@ def get_comment_by_apply(p_apply_id):
     return res_arr
 
 
+# Добавить комментарий к заявке
 def add_comment(p_app_id, p_emp_id, p_telegram_user_id, p_comment):
     dt = datetime.now()
     ad_comm = Application_comment(app_id=p_app_id, dt_add=dt, telegram_user_id=p_telegram_user_id,
