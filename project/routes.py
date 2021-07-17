@@ -1,8 +1,8 @@
 from flask import render_template
 from models import (my_apply, db, request, Departments, Employees, Dictionary, Dictionary_type, Log, Telegram_logs,
-                    Telegram_users, Application, Sessions, check_dep_name, check_dep_id, get_dep_list, create_log,
-                    check_emp_id, check_emp, get_emp_list, get_dictionary_value_list, get_app_list,
-                    get_emp_id_by_session, get_app_list_by_emp)
+                    Telegram_users, Application, Sessions, check_dep, get_dep_list, create_log,
+                    check_emp, check_emp, get_emp_list, get_dictionary_value_list, get_app_list,
+                    get_emp_id_by_session, get_app_list_by_emp, get_comment_by_apply, add_comment)
 from datetime import datetime
 
 
@@ -98,14 +98,15 @@ def create_dep():
     dep_name = request.form.get('dep_name')
     if dep_name is not None:
         dt = datetime.now()
-        check_dep = check_dep_name(dep_name)
-        if check_dep is not None:
+        ch_dep = check_dep(1, dep_name)
+        if ch_dep is not None:
             return render_template("departments_add.html", dep_list="", emp_id=emp_id[0],
                                    dep_data="В системе уже есть департамент с таким именем", user_roles=res_session[0])
         else:
             dep_cr = Departments(dt_add=dt, dep_name=dep_name, dt_upd=dt)
             db.session.add(dep_cr)
             db.session.flush()
+            db.session.commit()
 
             source = "/create_dep"
             log_text = f"Добавлен департамент с именем dep_name: {dep_name}"
@@ -183,15 +184,15 @@ def get_all_dep():
     res_session = check_active_session(ip)
     emp_id = get_emp_id_by_session(ip)
     if res_session is None:
-        return render_template("departments.html", dep_list="", emp_id=0, dep_data="Вы не авторизированы", user_roles="")
+        return render_template("departments.html", dep_list="", emp_id=0, dep_data="Вы не авторизированы",
+                               user_roles="")
     else:
         cou_row = request.form.get('cou_row')
-
         if cou_row == "0":
             dep_list = get_dep_list()
         else:
             dep_list = get_dep_list(cou_row)
-        return render_template("departments.html", dep_list=dep_list, emp_id=emp_id[0],user_roles=res_session[0])
+        return render_template("departments.html", dep_list=dep_list, emp_id=emp_id[0], user_roles=res_session[0])
 
 
 # Создание сотрудника
@@ -214,8 +215,7 @@ def create_emp():
 
         if full_name is not None:
             dt = datetime.now()
-            check_employees = check_emp(full_name)
-
+            check_employees = check_emp(1, full_name)
             if check_employees is not None:
                 return render_template("employees_add.html",
                                        emp_result=f"Сотрудник с таким ФИО уже существует, его id: {check_employees}",
@@ -254,7 +254,7 @@ def update_emp():
     login = request.form.get('login')
 
     if res_session is not None:
-        check_employeer = check_emp_id(emp_id)
+        check_employeer = check_emp(2, emp_id)
         if check_employeer is not None:
             # запрос в БД
             emp = Employees.query.get(check_employeer)
@@ -327,122 +327,36 @@ def get_all_emp():
                                user_roles=res_session[0], emp_result="")
 
 
-# @my_apply.route("/create_apply", methods=["POST"])
-# def create_apply():
-#
-#
-#
-#     if request.method == "POST":
-#         emp_data = json.loads(request.data)
-#         order_type = emp_data['order_type']
-#         description = emp_data['description']
-#         serial_no = emp_data['serial_no']
-#         creator_id = emp_data['creator_id']
-#         status = "New"
-#
-#         res = check_emp(creator_id)
-#
-#         if res is None:
-#             return render_template("applications.html", apply_info="ОШИБКА: Не найдено указанного пользователя, кто создаёт заявку")
-#         else:
-#             dt = datetime.now()
-#             app_cr = Applications(created_dt=dt, order_type=order_type, description=description, status=status, serial_no = serial_no, creator_id =creator_id)
-#             db.session.add(app_cr)
-#             db.session.flush()
-#
-#             dt = datetime.now()
-#             log_text = f"Создана заявка с параметрами created_dt:{dt}, order_type {order_type}, description {description}, serial_no {serial_no}, creator_id {creator_id}"
-#             log = Log(created_dt=dt, type="create_apply", comment=log_text)
-#             db.session.add(log)
-#             db.session.flush()
-#             db.session.commit()
-#
-#             return render_template("applications.html", apply_info="ИНФО: Создана заявка")
-#
-# # Обновление статуса заявки по order_id
-# @my_apply.route("/update_apply", methods=["POST"])
-# def change_apply():
-#
-#     if request.method == "POST":
-#         apply_data = json.loads(request.data)
-#         order_type = apply_data["order_type"]
-#         description = apply_data["description"]
-#         serial_no = apply_data["serial_no"]
-#         creator_id = apply_data["creator_id"]
-#         status = apply_data["status"]
-#         apply_id = apply_data["apply_id"]
-#
-#         res = check_apply(apply_id)
-#         if res is None:
-#             return render_template("applications.html", apply_info="ОШИБКА: Завку не найдено")
-#         else:
-#
-#             dt = datetime.now()
-#             # запрос в БД
-#             apply = Applications.query.get(res[0])
-#             apply.updated_dt = dt
-#             apply.order_type = order_type
-#             apply.description = description
-#             apply.serial_no = serial_no
-#             apply.creator_id = creator_id
-#             apply.status = status
-#
-#             db.session.commit()
-#
-#
-#             log_text = f"""Обновлена заявка с id {apply_id}, новые параметры order_type:{order_type}, description {description}, serial_no {serial_no}
-#             , creator_id {creator_id}, status {status}"""
-#             log = Log(created_dt=dt, type="update_apply", comment=log_text)
-#             db.session.add(log)
-#             db.session.flush()
-#             db.session.commit()
-#
-#             return render_template("applications.html", apply_info=f"ИНФО: Обновлена заявка с id {apply_id}")
-#
-# # Удаление заявки
-# @my_apply.route("/delete_apply/<int:apply_id>", methods=["DELETE"])
-# def delete_apply(apply_id):
-#
-#     if request.method == "DELETE":
-#         res = check_apply(apply_id)
-#         if res is None:
-#             return render_template("applications.html", apply_info=f"ОШИБКА: Зявку с таким id не найдено")
-#         else:
-#             app = Applications.query.get(res[0])
-#             db.session.delete(app)
-#             db.session.commit()
-#
-#             dt = datetime.now()
-#             log_text = f"Удалена заявка с id {apply_id}."
-#             log = Log(created_dt=dt, type="delete_apply", comment=log_text)
-#             db.session.add(log)
-#             db.session.flush()
-#             db.session.commit()
-#
-#             return render_template("applications.html", apply_info=f"ИНФО: Удалена заявка с id {apply_id}")
-
-
-
+# Полученние списка всех заявок
 @my_apply.route("/get_all_app", methods=["GET", "POST"])
 def get_all_app():
     ip = request.environ['REMOTE_ADDR']
     res_session = check_active_session(ip)
     emp_ids = get_emp_id_by_session(ip)
-    cou_row = 0
+
     if res_session is None:
-        return render_template("applications.html", employees_list="", user_roles="", emp_result="Вы не авторизированы")
+        return render_template("applications.html", employees_list="", filt_value=0, user_roles="",
+                               emp_result="Вы не авторизированы")
     else:
+        app_list = []
         cou_row = request.form.get('cou_row')
-        print("COU_ROW: ", cou_row)
-        if cou_row == "0":
-            app_list = get_app_list()
-        else:
-            app_list = get_app_list(cou_row)
-        return render_template("applications.html", app_list=app_list, apply_info="",emp_id=emp_ids[0],
-                               user_roles=res_session[0])
-    return render_template("applications.html", app_list="", apply_info="Вы не авторизированы", user_roles="")
+        filter = request.form.get('filter')
+        filter_val = request.form.get('filter_val')
+
+        if cou_row == "0" and filter is None:
+            app_list = get_app_list("0", -1, 0)
+        elif cou_row != "0" and filter is None:
+            app_list = get_app_list(cou_row, -1, 0)
+        elif cou_row == "0" and filter is not None:
+            app_list = get_app_list("0", filter, filter_val)
+        elif cou_row != "0" and filter is not None:
+            app_list = get_app_list(cou_row, filter, filter_val)
+
+        return render_template("applications.html", app_list=app_list,
+                               apply_info="", emp_id=emp_ids[0], user_roles=res_session[0])
 
 
+# Функция принятия заявки в роботу
 @my_apply.route("/set_executor_apply/<int:app_id>", methods=["POST"])
 def set_executor_apply(app_id):
     ip = request.environ['REMOTE_ADDR']
@@ -450,26 +364,28 @@ def set_executor_apply(app_id):
     emp_id = get_emp_id_by_session(ip)
 
     if res_session is not None:
-            sql_app = db.select(Application.id).where(Application.id == f'{app_id}')
-            res = db.session.execute(sql_app).fetchone()
+        sql_app = db.select(Application.id).where(Application.id == f'{app_id}')
+        res = db.session.execute(sql_app).fetchone()
 
-            app = Application.query.get(res)
+        app = Application.query.get(res)
 
-            app.executor_id = emp_id[0]
-            db.session.commit()
+        app.executor_id = emp_id[0]
+        app.status = "В роботе"
+        db.session.commit()
 
-            source = "/update_emp"
-            log_text = f"Обновлен сотрудник по заявке: {app} на {emp_id[0]}"
-            create_log(source, log_text)
+        source = "/update_emp"
+        log_text = f"Обновлен сотрудник по заявке: {app} на {emp_id[0]}"
+        create_log(source, log_text)
 
-            app_list = get_app_list()
+        app_list = get_app_list()
 
-            return render_template("applications.html", app_list=app_list, apply_info="Заявку взято в роботу",
-                                   emp_id=emp_id[0], user_roles=res_session[0])
+        return render_template("applications.html", app_list=app_list, apply_info="Заявку взято в роботу",
+                               emp_id=emp_id[0], user_roles=res_session[0])
     else:
-        return render_template("applications.html", app_list="", apply_info="", emp_id=0, user_roles=res_session[0])
+        return render_template("applications.html", app_list="", apply_info="", emp_id=0, user_roles="")
 
 
+# Вывод списка моих заявок
 @my_apply.route("/my_app", methods=["GET", "POST"])
 def my_app():
     ip = request.environ['REMOTE_ADDR']
@@ -477,7 +393,8 @@ def my_app():
     emp_ids = get_emp_id_by_session(ip)
 
     if res_session is None:
-        return render_template("applications_by_emp.html", employees_list="", user_roles="", emp_result="Вы не авторизированы")
+        return render_template("applications_by_emp.html", employees_list="", user_roles="",
+                               emp_result="Вы не авторизированы")
     else:
         cou_row = request.form.get('cou_row')
         if cou_row == "0":
@@ -486,4 +403,24 @@ def my_app():
             app_list = get_app_list_by_emp(cou_row, emp_ids[0])
         return render_template("applications_by_emp.html", app_list=app_list, apply_info="", emp_id=emp_ids[0],
                                user_roles=res_session[0])
-    return render_template("applications_by_emp.html", app_list="", apply_info="Вы не авторизированы", user_roles="")
+
+
+# Просмотр и написание комментариев по заявке
+@my_apply.route("/view_apply/<int:app_id>", methods=["POST"])
+def view_apply(app_id):
+    ip = request.environ['REMOTE_ADDR']
+    res_session = check_active_session(ip)
+    emp_id = get_emp_id_by_session(ip)
+    print(app_id)
+    if res_session is not None:
+
+        comm = request.form.get('comm_text')
+        if comm is not None:
+            add_comment(app_id, emp_id[0], 999999, comm)
+
+        comm_list = get_comment_by_apply(app_id)
+
+        return render_template("applications_comment.html", app_list=comm_list, apply_info="Заявку взято в роботу",
+                               emp_id=emp_id[0], user_roles=res_session[0])
+    else:
+        return render_template("applications_comment.html", app_list="", apply_info="", emp_id=0, user_roles="")

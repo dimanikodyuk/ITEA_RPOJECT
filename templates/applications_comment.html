@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Заявки</title>
+    <title>Заявки мои</title>
 </head>
 
  <style type="text/css">
@@ -98,7 +98,6 @@
 
 <h1>Поддержка компании NRock</h1>
 <p><i>Ваша техника в надёжных руках!</i></p>
-
 <br><br>
 
 {% if user_roles == 2 %}
@@ -123,76 +122,46 @@
         </p>
     </form>
 
-    <form action="" method="post">
-        <p>
-
-            Фильтр по:
-            <br>
-            <select id="sel_size" size="1" name="filter">
-                <option disabled>Фильтр по</option>
-                <option value="0">Клиенту</option>
-                <option value="1">Статусу</option>
-                <option value="2">Сотруднику</option>
-            </select>
-            <br>
-            Введите значение
-            <br>
-
-            <input maxlength="50" size="20" name="filter_val">
-            <br> <br>
-            <input id="sel_size" type="submit" value="Поиск">
-        </p>
-    </form>
-
-
 
     <!-- Меню -->
-    <h2>Заявки</h2>
+    <h2>Мои заявки</h2>
 
-
-        <form action="/my_app" method="post">
-            <button id="button">Мои заявки</button>
-        </form>
         <br>
-
-
-
 
     <!-- Таблица департаментов -->
     <table >
-
         <tr align="center" style="background: orange;">
             <td>ID</td>
             <td>Дата создания</td>
-            <td>Тип</td>
-            <td>Описание</td>
-            <td>Статус</td>
-            <td>Создатель</td>
-            <td>Дата обновления</td>
-            <td></td>
-
-            </tr>
+            <td>Комментарий</td>
+            <td>Клиент</td>
 
 
-            {% for app in app_list %}
-            <tr>
+
+
+        </tr>
+        {% for app in app_list %}
+        <tr>
             <td align="center">{{ app[0] }}</td>
             <td>{{ app[1] }}</td>
             <td>{{ app[2] }}</td>
             <td>{{ app[3] }}</td>
-            <td>{{ app[4] }}</td>
-            <td>{{ app[7] }}</td>
-            <td>{{ app[8] }}</td>
-
-            <td>
-                <form action="/set_executor_apply/{{ app[0] }}" method="post">
-                <button id="button">В роботу</button>
-                </form>
-            </td>
-
         </tr>
         {% endfor %}
     </table>
+
+
+<form action="" method="post">
+        <p>
+            Введите комментарий:
+            <br>
+            <textarea name="comm_text", cols="100"></textarea>
+            <br>
+            <input id="sel_size" type="submit" value="Отправить">
+        </p>
+</form>
+
+
 
 {% else %}
 
