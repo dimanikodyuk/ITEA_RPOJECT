@@ -66,7 +66,7 @@ def menu_user(p_user_id):
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     keyboard.add(*[types.KeyboardButton('Создать заявку')])
     keyboard.add(*[types.KeyboardButton('Созданные Вами заявки')])
-    keyboard.add(*[types.KeyboardButton('Добавить комментарий')])
+    #keyboard.add(*[types.KeyboardButton('Добавить комментарий')])
     bot.send_message(p_user_id, datetime.now().strftime("%d.%m.%Y"), parse_mode="HTML", reply_markup=keyboard)
 
 
